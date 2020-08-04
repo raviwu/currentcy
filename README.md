@@ -8,3 +8,9 @@ Data Source: [https://rate.bot.com.tw/xrt?Lang=en-US](https://rate.bot.com.tw/xr
 
 https://github.com/golang-standards/project-layout
 
+## TODOs
+
+[] Testing
+[] Seperation of the Data Query
+[] Filter for the currency
+[] Formatting the output
