@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -14,8 +15,17 @@ func init() {
 	cacheCurrentcyFilePath = fmt.Sprintf("%scacheCurrentcy-%d-%d-%d", os.TempDir(), time.Now().Year(), time.Now().Month(), time.Now().Day())
 }
 
-var cacheCurrentcyFilePath = ""
-var dataSource = "https://rate.bot.com.tw/xrt/fltxt/0/day?Lang=en-US"
+type rate struct {
+	From string
+	To   string
+	Rate string
+}
+
+var (
+	cacheCurrentcyFilePath = ""
+	dataSource             = "https://rate.bot.com.tw/xrt/fltxt/0/day?Lang=en-US"
+	rates                  []rate
+)
 
 func main() {
 	if fileNotExists(cacheCurrentcyFilePath) {
@@ -36,9 +46,31 @@ func main() {
 		fileTextLines = append(fileTextLines, fileScanner.Text())
 	}
 
-	for _, eachline := range fileTextLines {
-		fmt.Println(eachline)
+	fmt.Printf("%v", rates)
+
+	for ln, line := range fileTextLines {
+		if ln == 0 {
+			continue
+		}
+
+		data := strings.Fields(line)
+
+		// Bank Selling
+		rates = append(rates, rate{
+			From: "NTD",
+			To:   data[0],
+			Rate: data[12],
+		})
+
+		// Bank Buying
+		rates = append(rates, rate{
+			From: data[0],
+			To:   "NTD",
+			Rate: data[2],
+		})
 	}
+
+	fmt.Printf("%v", rates)
 }
 
 func fileNotExists(name string) bool {
