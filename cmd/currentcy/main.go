@@ -16,9 +16,9 @@ func init() {
 }
 
 type rate struct {
-	From string
-	To   string
-	Rate string
+	From string `json:"from"`
+	To   string `json:"to"`
+	Rate string `json:"rate"`
 }
 
 var (
