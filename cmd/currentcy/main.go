@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -46,8 +47,6 @@ func main() {
 		fileTextLines = append(fileTextLines, fileScanner.Text())
 	}
 
-	fmt.Printf("%v", rates)
-
 	for ln, line := range fileTextLines {
 		if ln == 0 {
 			continue
@@ -70,7 +69,12 @@ func main() {
 		})
 	}
 
-	fmt.Printf("%v", rates)
+	byteArray, err := json.Marshal(rates)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(string(byteArray))
 }
 
 func fileNotExists(name string) bool {
