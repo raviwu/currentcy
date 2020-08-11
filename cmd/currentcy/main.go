@@ -1,10 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -23,58 +23,25 @@ type rate struct {
 }
 
 var (
-	cacheCurrentcyFilePath = ""
+	cacheCurrentcyFilePath = "./cache"
 	dataSource             = "https://rate.bot.com.tw/xrt/fltxt/0/day?Lang=en-US"
 	rates                  []rate
 )
 
 func main() {
 	if fileNotExists(cacheCurrentcyFilePath) {
-		saveRequestToFile(dataSource, cacheCurrentcyFilePath)
+		saveRequestToJsonFile(dataSource, cacheCurrentcyFilePath)
 	}
 
 	cacheFile, err := os.Open(cacheCurrentcyFilePath)
 	if err != nil {
-		log.Fatalln("Couldn't open the csv file", err)
+		log.Fatalln("Couldn't open the cache file", err)
 	}
 	defer cacheFile.Close()
 
-	fileScanner := bufio.NewScanner(cacheFile)
-	fileScanner.Split(bufio.ScanLines)
-	var fileTextLines []string
+	rates = parseCache(cacheFile)
 
-	for fileScanner.Scan() {
-		fileTextLines = append(fileTextLines, fileScanner.Text())
-	}
-
-	for ln, line := range fileTextLines {
-		if ln == 0 {
-			continue
-		}
-
-		data := strings.Fields(line)
-
-		// Bank Selling
-		rates = append(rates, rate{
-			From: "NTD",
-			To:   data[0],
-			Rate: data[12],
-		})
-
-		// Bank Buying
-		rates = append(rates, rate{
-			From: data[0],
-			To:   "NTD",
-			Rate: data[2],
-		})
-	}
-
-	byteArray, err := json.Marshal(rates)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Println(string(byteArray))
+	fmt.Println(rates)
 }
 
 func fileNotExists(name string) bool {
@@ -82,7 +49,7 @@ func fileNotExists(name string) bool {
 	return os.IsNotExist(err)
 }
 
-func saveRequestToFile(url string, file string) {
+func saveRequestToJsonFile(url string, file string) {
 	cacheFile, err := os.Create(file)
 	if err != nil {
 		log.Fatal(err)
@@ -95,5 +62,53 @@ func saveRequestToFile(url string, file string) {
 	}
 	defer resp.Body.Close()
 
-	io.Copy(cacheFile, resp.Body)
+	rdata, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var fetchedRates []rate
+
+	for ln, line := range strings.Split(string(rdata), "\n") {
+		if ln == 0 {
+			continue
+		}
+
+		data := strings.Fields(line)
+
+		if len(data) != 21 {
+			continue
+		}
+
+		// Bank Selling
+		fetchedRates = append(fetchedRates, rate{
+			From: "NTD",
+			To:   data[0],
+			Rate: data[12],
+		})
+
+		// Bank Buying
+		fetchedRates = append(fetchedRates, rate{
+			From: data[0],
+			To:   "NTD",
+			Rate: data[2],
+		})
+	}
+
+	byteArray, err := json.Marshal(fetchedRates)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	_, err = cacheFile.Write(byteArray)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func parseCache(f io.Reader) []rate {
+	byteValue, _ := ioutil.ReadAll(f)
+	var rs []rate
+	json.Unmarshal(byteValue, &rs)
+	return rs
 }
