@@ -10,7 +10,7 @@ https://github.com/golang-standards/project-layout
 
 ## TODOs
 
-[] Testing
-[] Seperation of the Data Query
-[] Filter for the currency
-[] Formatting the output
+- [] Testing
+- [] Seperation of the Data Query
+- [] Filter for the currency
+- [] Formatting the output
