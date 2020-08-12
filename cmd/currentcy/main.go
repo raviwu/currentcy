@@ -41,7 +41,22 @@ func main() {
 
 	rates = parseCache(cacheFile)
 
-	fmt.Println(rates)
+	presentRate(rates)
+}
+
+func presentRate(rates []rate) {
+	fmt.Println(fmt.Sprintf("Exchange Rate: %d-%d-%d", time.Now().Year(), time.Now().Month(), time.Now().Day()))
+	printDivider()
+	fmt.Println(`|  From  |   To   |   Rate   |`)
+	printDivider()
+	for _, rate := range rates {
+		fmt.Println(fmt.Sprintf("| %6s | %6s | %8s |", rate.From, rate.To, rate.Rate))
+		printDivider()
+	}
+}
+
+func printDivider() {
+	fmt.Println(`------------------------------`)
 }
 
 func fileNotExists(name string) bool {
