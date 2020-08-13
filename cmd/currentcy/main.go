@@ -41,7 +41,42 @@ func main() {
 
 	rates = parseCache(cacheFile)
 
+	rates = filter(rates, filterFrom("NTD", "USD"))
+	rates = filter(rates, filterTo("USD", "EUR", "NTD"))
+
 	presentRate(rates)
+}
+
+func filterFrom(froms ...string) func(r rate) bool {
+	return func(r rate) bool {
+		for _, from := range froms {
+			if r.From == from {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+func filterTo(tos ...string) func(r rate) bool {
+	return func(r rate) bool {
+		for _, to := range tos {
+			if r.To == to {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+func filter(rates []rate, filterFunc func(r rate) bool) []rate {
+	var rs []rate
+	for _, rate := range rates {
+		if filterFunc(rate) {
+			rs = append(rs, rate)
+		}
+	}
+	return rs
 }
 
 func presentRate(rates []rate) {
