@@ -22,9 +22,10 @@ type rate struct {
 	Rate string `json:"rate"`
 }
 
+const dataSource = "https://rate.bot.com.tw/xrt/fltxt/0/day?Lang=en-US"
+
 var (
-	cacheCurrentcyFilePath = "./cache"
-	dataSource             = "https://rate.bot.com.tw/xrt/fltxt/0/day?Lang=en-US"
+	cacheCurrentcyFilePath = ""
 	rates                  []rate
 )
 
